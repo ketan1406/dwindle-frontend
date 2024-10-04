@@ -25,6 +25,7 @@
 import { supabase } from '../supabase';
 import AppHeader from '../components/Header.vue';
 import AppFooter from '../components/Footer.vue';
+import { store } from '../store.js';
 
 export default {
   name: 'LoginView',
@@ -37,7 +38,7 @@ export default {
   },
   methods: {
     async login() {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data,error } = await supabase.auth.signInWithPassword({
         email: this.email,
         password: this.password,
       });
@@ -45,8 +46,8 @@ export default {
         console.error('Login error:', error.message);
         alert('Login failed: ' + error.message);
       } else {
-        // Redirect to dashboard or home page
-        this.$router.push('/');
+        store.user = data.user; // Update store with authenticated user
+        this.$router.push('/dashboard');  // Redirect to dashboard or home page
       }
     },
     async loginWithGoogle() {
