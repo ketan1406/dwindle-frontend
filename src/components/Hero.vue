@@ -16,7 +16,7 @@ export default {
   name: 'HeroSection',
   methods: {
     getStarted() {
-      // Handle the click event, e.g., navigate to a signup page
+      this.$router.push('/signup');
     },
   },
 };
