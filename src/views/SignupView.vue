@@ -47,22 +47,22 @@ export default {
 
     async checkUsernameAvailability(username) {
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('username')
-          .eq('username', username);
+        const { data, error } = await supabase.rpc('is_username_available', {
+          _username: username,
+        });
 
         if (error) {
           console.error('Error checking username availability:', error.message);
           throw error;
         }
 
-        return data.length === 0;
+        return data; // `data` will be `true` if available, `false` if not
       } catch (error) {
         console.error('Error in checkUsernameAvailability:', error.message);
         throw error;
       }
     },
+
 
     async handleSignUp() {
       try {
