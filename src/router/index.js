@@ -5,7 +5,7 @@ import HomeView from '../views/HomeView.vue';
 import LoginView from '../views/LoginView.vue';
 import SignupView from '../views/SignupView.vue';
 import UserDashboard from '../views/UserDashboard.vue';
-import { store } from '../store.js';
+import store from '../store';
 // Import other views as needed
 
 const routes = [
@@ -27,14 +27,12 @@ const router = createRouter({
 
 // Add navigation guard
 router.beforeEach((to, from, next) => {
-  if (to.matched.some((record) => record.meta.requiresAuth)) {
-    if (!store.user) {
-      next({ name: 'Login' });
-    } else {
-      next();
-    }
-  } else if (to.name === 'Login' && store.user) {
-    next({ name: 'UserDashboard' });  // Redirect authenticated users to the dashboard
+  const isAuthenticated = store.getters.isAuthenticated;
+  console.log(`Navigating to ${to.name}, Authenticated: ${isAuthenticated}`);
+  if (to.matched.some((record) => record.meta.requiresAuth) && !isAuthenticated) {
+    next({ name: 'Login' });
+  } else if (['Login', 'Signup'].includes(to.name) && isAuthenticated) {
+    next({ name: 'UserDashboard' });
   } else {
     next();
   }
