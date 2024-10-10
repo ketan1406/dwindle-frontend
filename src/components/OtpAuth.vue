@@ -6,11 +6,12 @@
       <form @submit.prevent="verifyOtp">
         <input v-model="otp" type="text" placeholder="Enter OTP" required
           class="mb-4 p-2 border rounded w-full text-center text-xl tracking-widest" maxlength="6" />
-        <button type="submit" class="bg-green-500 text-white py-2 px-4 rounded w-full">
-          Verify
+        <button type="submit" class="bg-green-500 text-white py-2 px-4 rounded w-full" :disabled="loading">
+          <span v-if="loading">Verifying...</span>
+          <span v-else>Verify</span>
         </button>
       </form>
-      <button @click="resendOtp" class="mt-4 text-blue-500 underline w-full text-center">
+      <button @click="resendOtp" class="mt-4 text-blue-500 underline w-full text-center" :disabled="loading">
         Resend OTP
       </button>
     </div>
@@ -35,12 +36,15 @@ export default {
   data() {
     return {
       otp: '',
+      loading: false, // Track loading state
     };
   },
   methods: {
+    // OtpAuth.vue
     async verifyOtp() {
+      this.loading = true;
       try {
-        const { error } = await supabase.auth.verifyOtp({
+        const { data, error } = await supabase.auth.verifyOtp({
           email: this.email,
           token: this.otp,
           type: 'signup',
@@ -50,38 +54,24 @@ export default {
           throw error;
         }
 
-        // Fetch the authenticated user
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
+        const user = data.user;
 
-        if (userError) {
-          throw userError;
-        }
-
-        // Insert into profiles table
-        const { error: profileError } = await supabase.from('profiles').insert({
-          id: user.id,
-          email: user.email,
-          username: user.user_metadata.username || user.email.split('@')[0],
-        });
-
-        if (profileError) {
-          throw profileError;
+        if (!user) {
+          throw new Error('User not found after OTP verification');
         }
 
         // Emit event to parent component to indicate successful verification
         this.$emit('verified');
-
-        // Reset OTP input
         this.otp = '';
       } catch (error) {
         console.error('OTP verification error:', error.message);
         alert('OTP verification failed: ' + error.message);
+      } finally {
+        this.loading = false;
       }
     },
     async resendOtp() {
+      this.loading = true; // Set loading to true while OTP is being resent
       try {
         const { error } = await supabase.auth.resend({
           email: this.email,
@@ -96,6 +86,8 @@ export default {
       } catch (error) {
         console.error('Resend OTP error:', error.message);
         alert('Failed to resend OTP: ' + error.message);
+      } finally {
+        this.loading = false; // Reset loading state after resending OTP
       }
     },
   },

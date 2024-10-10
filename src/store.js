@@ -43,14 +43,12 @@ const store = createStore({
             email: email,
             password: password,
             options: {
-              data: {
+              user_metadata: {
                 username: username, // Pass username as metadata
               },
+              emailRedirectTo: window.location.origin, // Redirect after verification
             },
           },
-          {
-            emailRedirectTo: window.location.origin, // Redirect after verification
-          }
         );
         if (error) throw error;
         
