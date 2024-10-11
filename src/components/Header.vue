@@ -1,16 +1,72 @@
 <template>
-  <header class="bg-white shadow">
-    <div class="container mx-auto flex justify-between items-center py-4 px-6">
-      <h1 class="text-2xl font-bold text-gray-800">
-        <router-link to="/">Dwindle</router-link>
-      </h1>
-      <nav class="space-x-4">
-        <router-link to="/" class="text-gray-600 hover:text-blue-500">Home</router-link>
-        <router-link to="/login" class="text-gray-600 hover:text-blue-500" v-if="!isAuthenticated">Login</router-link>
-        <button v-if="isAuthenticated" @click="handleLogout" class="text-gray-600 hover:text-blue-500">Logout</button>
-      </nav>
+  <div class="navbar bg-gray-50">
+    <!-- Left Side: Logo -->
+    <div class="navbar-start">
+      <router-link to="/" class="btn btn-ghost normal-case text-xl text-gray-800">Dwindle</router-link>
     </div>
-  </header>
+
+    <!-- Right Side: Navigation Links -->
+    <div class="navbar-end">
+      <!-- When user is logged out -->
+      <div v-if="!isAuthenticated" class="flex items-center space-x-2">
+        <router-link to="/contact" class="btn btn-ghost text-gray-800 hover:bg-gray-200">Contact</router-link>
+        <router-link to="/login" class="btn btn-primary">Login</router-link>
+      </div>
+
+      <!-- When user is logged in -->
+      <div v-else class="flex items-center space-x-2">
+        <!-- Notification Icon -->
+        <div class="dropdown dropdown-end">
+          <button tabindex="0" class="btn btn-ghost btn-circle text-gray-800 hover:bg-gray-200">
+            <div class="indicator">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 17h5l-1.405-1.405A2.032
+                  2.032 0 0118 14.158V11a6.002 6.002
+                  0 00-4-5.659V5a2 2 0 10-4
+                  0v.341C7.67 6.165 6 8.388 6
+                  11v3.159c0 .538-.214 1.055-.595
+                  1.436L4 17h5m6 0v1a3 3 0
+                  11-6 0v-1m6 0H9" />
+              </svg>
+              <!-- Notification Badge (optional) -->
+              <span class="badge badge-xs badge-primary indicator-item"></span>
+            </div>
+          </button>
+          <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 p-2 shadow bg-white rounded-box w-52">
+            <!-- Notification Items -->
+            <li><a>Notification 1</a></li>
+            <li><a>Notification 2</a></li>
+            <!-- Add more notifications as needed -->
+          </ul>
+        </div>
+
+        <!-- Avatar Icon -->
+        <div class="dropdown dropdown-end">
+          <button tabindex="0" class="btn btn-ghost btn-circle avatar">
+            <div class="w-10 rounded-full">
+              <img
+                src="https://img.daisyui.com/avatars/placeholder-avatar.jpg"
+                alt="User Avatar"
+              />
+            </div>
+          </button>
+          <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 p-2 shadow bg-white rounded-box w-52">
+            <!-- Logout Option -->
+            <li><a @click.prevent="handleLogout">Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>

@@ -1,19 +1,54 @@
 <template>
-  <div v-if="isVisible" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white rounded-lg p-6 w-11/12 max-w-md">
-      <h2 class="text-2xl font-bold mb-4 text-center">Verify Your Email</h2>
-      <p class="mb-4 text-center">An OTP has been sent to {{ email }}. Please enter it below to verify your account.</p>
-      <form @submit.prevent="verifyOtp">
-        <input v-model="otp" type="text" placeholder="Enter OTP" required
-          class="mb-4 p-2 border rounded w-full text-center text-xl tracking-widest" maxlength="6" />
-        <button type="submit" class="bg-green-500 text-white py-2 px-4 rounded w-full" :disabled="loading">
+  <div v-if="isVisible" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
+    <div class="bg-white dark:bg-gray-900 rounded-lg p-6 w-11/12 max-w-md mx-auto">
+      <h2 class="text-2xl font-bold mb-4 text-center text-gray-800 dark:text-white">
+        Verify Your Email
+      </h2>
+      <p class="mb-4 text-center text-gray-600 dark:text-gray-400">
+        An OTP has been sent to <strong>{{ email }}</strong>. Please enter it below to verify your account.
+      </p>
+      <form @submit.prevent="verifyOtp" class="space-y-4">
+        <!-- OTP Input Fields -->
+        <div class="flex justify-center space-x-2">
+          <input
+            v-for="(digit, index) in otpInputs"
+            :key="index"
+            ref="otpInput"
+            v-model="otpInputs[index]"
+            type="text"
+            inputmode="numeric"
+            maxlength="1"
+            class="w-12 h-12 text-center text-xl font-semibold border rounded-md
+                   dark:bg-grey dark:text-gray-300 dark:border-gray-600
+                   focus:outline-none focus:ring-2 focus:ring-blue-400"
+            @input="onInput($event, index)"
+            @keydown.backspace="onBackspace($event)"
+            @paste="onPaste($event)"
+          />
+        </div>
+
+        <!-- Error Message Display -->
+        <div v-if="errorMessage" class="text-red-600 text-sm text-center">
+          {{ errorMessage }}
+        </div>
+
+        <!-- Verify Button -->
+        <button type="submit" :disabled="loading"
+                class="w-full px-6 py-3 text-sm font-medium tracking-wide text-white capitalize
+                transition-colors duration-300 transform bg-green-500 rounded-lg hover:bg-green-400
+                focus:outline-none focus:ring focus:ring-green-300 focus:ring-opacity-50">
           <span v-if="loading">Verifying...</span>
           <span v-else>Verify</span>
         </button>
+
+        <!-- Resend OTP Link -->
+        <div class="mt-4 text-center">
+          <button @click="resendOtp" :disabled="loading"
+                  class="text-sm text-blue-500 hover:underline dark:text-blue-400">
+            Resend OTP
+          </button>
+        </div>
       </form>
-      <button @click="resendOtp" class="mt-4 text-blue-500 underline w-full text-center" :disabled="loading">
-        Resend OTP
-      </button>
     </div>
   </div>
 </template>
@@ -35,18 +70,51 @@ export default {
   },
   data() {
     return {
-      otp: '',
+      otpInputs: ['', '', '', '', '', ''], // Array for 6-digit OTP
       loading: false, // Track loading state
+      errorMessage: '', // Error message display
     };
   },
   methods: {
-    // OtpAuth.vue
+    onInput(event, index) {
+      const input = event.target;
+      const value = input.value.replace(/\D/g, ''); // Remove non-numeric characters
+      this.$set(this.otpInputs, index, value);
+
+      if (value && input.nextElementSibling) {
+        input.nextElementSibling.focus();
+      }
+    },
+    onBackspace(event) {
+      const input = event.target;
+      if (!input.value && input.previousElementSibling) {
+        input.previousElementSibling.focus();
+      }
+    },
+    onPaste(event) {
+      event.preventDefault();
+      const pasteData = event.clipboardData.getData('text').slice(0, 6).replace(/\D/g, '');
+      this.otpInputs = pasteData.split('');
+      this.$nextTick(() => {
+        const lastFilledIndex = this.otpInputs.findIndex((digit) => digit === '');
+        const focusIndex = lastFilledIndex !== -1 ? lastFilledIndex : 5;
+        this.$refs.otpInput[focusIndex].focus();
+      });
+    },
     async verifyOtp() {
       this.loading = true;
+      this.errorMessage = '';
       try {
+        const otp = this.otpInputs.join('');
+        if (otp.length !== 6) {
+          this.errorMessage = 'Please enter a 6-digit OTP.';
+          this.loading = false;
+          return;
+        }
+
         const { data, error } = await supabase.auth.verifyOtp({
           email: this.email,
-          token: this.otp,
+          token: otp,
           type: 'signup',
         });
 
@@ -62,16 +130,17 @@ export default {
 
         // Emit event to parent component to indicate successful verification
         this.$emit('verified');
-        this.otp = '';
+        this.otpInputs = ['', '', '', '', '', ''];
       } catch (error) {
         console.error('OTP verification error:', error.message);
-        alert('OTP verification failed: ' + error.message);
+        this.errorMessage = 'OTP verification failed: ' + error.message;
       } finally {
         this.loading = false;
       }
     },
     async resendOtp() {
       this.loading = true; // Set loading to true while OTP is being resent
+      this.errorMessage = '';
       try {
         const { error } = await supabase.auth.resend({
           email: this.email,
@@ -85,7 +154,7 @@ export default {
         alert('A new OTP has been sent to your email.');
       } catch (error) {
         console.error('Resend OTP error:', error.message);
-        alert('Failed to resend OTP: ' + error.message);
+        this.errorMessage = 'Failed to resend OTP: ' + error.message;
       } finally {
         this.loading = false; // Reset loading state after resending OTP
       }
@@ -93,42 +162,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-/* Modal styles */
-.fixed {
-  position: fixed;
-  z-index: 50;
-}
-
-.inset-0 {
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
-
-.bg-black {
-  background-color: rgba(0, 0, 0, 0.5);
-}
-
-.bg-white {
-  background-color: white;
-}
-
-.rounded-lg {
-  border-radius: 0.5rem;
-}
-
-.p-6 {
-  padding: 1.5rem;
-}
-
-.w-11\/12 {
-  width: 91.666667%;
-}
-
-.max-w-md {
-  max-width: 28rem;
-}
-</style>
