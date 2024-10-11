@@ -5,7 +5,11 @@ module.exports = {
     "./src/**/*.{vue,js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        grey: '#4C4C4C',
+      },
+    },
   },
-  plugins: [],
+  plugins: [require('daisyui')],
 };
