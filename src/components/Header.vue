@@ -15,6 +15,10 @@
 
       <!-- When user is logged in -->
       <div v-else class="flex items-center space-x-2">
+        <!-- Show admin link if user is admin -->
+        <router-link v-if="isAdmin" to="/admin" class="btn btn-ghost text-gray-800 hover:bg-gray-200">
+          Admin Dashboard
+        </router-link>
         <!-- Notification Icon -->
         <div class="dropdown dropdown-end">
           <button tabindex="0" class="btn btn-ghost btn-circle text-gray-800 hover:bg-gray-200">
@@ -75,7 +79,7 @@ import { mapActions, mapGetters } from 'vuex';
 export default {
   name: 'AppHeader',
   computed: {
-    ...mapGetters(['isAuthenticated']), // Map isAuthenticated getter to check if user is logged in
+    ...mapGetters(['isAuthenticated', 'isAdmin']), // Map isAuthenticated getter to check if user is logged in
   },
   methods: {
     ...mapActions(['logout']), // Map Vuex logout action
