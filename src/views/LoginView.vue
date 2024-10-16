@@ -140,7 +140,11 @@ export default {
       try {
         await this.login({ email: this.email, password: this.password });
         console.log('Login successful');
-        this.$router.push('/dashboard');  // Redirect after successful login
+        if (this.$store.getters.isAdmin) {
+          this.$router.push('/admin');
+        } else {
+          this.$router.push('/dashboard');
+        }
       } catch (error) {
         console.error('Login error:', error.message);
         alert('Login failed: ' + error.message);
