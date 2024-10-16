@@ -16,12 +16,16 @@
       <!-- When user is logged in -->
       <div v-else class="flex items-center space-x-2">
         <!-- Show admin link if user is admin -->
-        <router-link v-if="isAdmin" to="/admin" class="btn btn-ghost text-gray-800 hover:bg-gray-200">
-          Admin Dashboard
+        <router-link
+          v-if="isAdmin"
+          :to="dashboardLink"
+          class="btn btn-ghost text-gray-800 hover:bg-gray-200">
+          {{ dashboardText }}
         </router-link>
+
         <!-- Notification Icon -->
         <div class="dropdown dropdown-end">
-          <button tabindex="0" class="btn btn-ghost btn-circle text-gray-800 hover:bg-gray-200">
+          <button @click="toggleNotificationDropdown" aria-expanded="isNotificationOpen" class="btn btn-ghost btn-circle text-gray-800 hover:bg-gray-200">
             <div class="indicator">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -41,30 +45,25 @@
                   1.436L4 17h5m6 0v1a3 3 0
                   11-6 0v-1m6 0H9" />
               </svg>
-              <!-- Notification Badge (optional) -->
               <span class="badge badge-xs badge-primary indicator-item"></span>
             </div>
           </button>
-          <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 p-2 shadow bg-white rounded-box w-52">
-            <!-- Notification Items -->
+          <!-- Only show dropdown when isNotificationOpen is true -->
+          <ul v-if="isNotificationOpen" tabindex="0" class="menu menu-sm dropdown-content mt-3 p-2 shadow bg-white rounded-box w-52 solid-bg">
             <li><a>Notification 1</a></li>
             <li><a>Notification 2</a></li>
-            <!-- Add more notifications as needed -->
           </ul>
         </div>
 
         <!-- Avatar Icon -->
         <div class="dropdown dropdown-end">
-          <button tabindex="0" class="btn btn-ghost btn-circle avatar">
+          <button @click="toggleAvatarDropdown" aria-expanded="isAvatarOpen" class="btn btn-ghost btn-circle avatar">
             <div class="w-10 rounded-full">
-              <img
-                src="https://img.daisyui.com/avatars/placeholder-avatar.jpg"
-                alt="User Avatar"
-              />
+              <img src="https://www.gravatar.com/avatar/?d=mp&f=y" alt="User Avatar" />
             </div>
           </button>
-          <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 p-2 shadow bg-white rounded-box w-52">
-            <!-- Logout Option -->
+          <!-- Only show dropdown when isAvatarOpen is true -->
+          <ul v-if="isAvatarOpen" tabindex="0" class="menu menu-sm dropdown-content mt-3 p-2 shadow bg-white rounded-box w-52 solid-bg">
             <li><a @click.prevent="handleLogout">Logout</a></li>
           </ul>
         </div>
@@ -78,18 +77,44 @@ import { mapActions, mapGetters } from 'vuex';
 
 export default {
   name: 'AppHeader',
+  data() {
+    return {
+      isNotificationOpen: false,
+      isAvatarOpen: false,
+    };
+  },
   computed: {
-    ...mapGetters(['isAuthenticated', 'isAdmin']), // Map isAuthenticated getter to check if user is logged in
+    ...mapGetters(['isAuthenticated', 'isAdmin']),
+    dashboardLink() {
+      if (!this.isAdmin) return null;
+      return this.$route.path === '/dashboard' ? '/admin' : '/dashboard';
+    },
+    dashboardText() {
+      if (!this.isAdmin) return '';
+      return this.$route.path === '/dashboard' ? 'Back to Admin Dashboard' : 'User Dashboard';
+    },
   },
   methods: {
-    ...mapActions(['logout']), // Map Vuex logout action
+    ...mapActions(['logout']),
     async handleLogout() {
       try {
-        await this.logout(); // Call Vuex action to log out
-        this.$router.push('/'); // Redirect to home after logout
+        await this.logout();
+        this.$router.push('/');
       } catch (error) {
         console.error('Logout error:', error.message);
         alert('Logout failed: ' + error.message);
+      }
+    },
+    toggleNotificationDropdown() {
+      this.isNotificationOpen = !this.isNotificationOpen;
+      if (this.isNotificationOpen) {
+        this.isAvatarOpen = false;
+      }
+    },
+    toggleAvatarDropdown() {
+      this.isAvatarOpen = !this.isAvatarOpen;
+      if (this.isAvatarOpen) {
+        this.isNotificationOpen = false;
       }
     },
   },
