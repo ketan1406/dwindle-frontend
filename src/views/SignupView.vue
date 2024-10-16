@@ -1,6 +1,5 @@
 <template>
   <div>
-    <AppHeader />
     <section class="bg-white dark:bg-gray-900">
       <div class="container flex items-center justify-center min-h-screen px-6 mx-auto">
         <form @submit.prevent="handleSignUp" class="w-full max-w-md">
@@ -192,22 +191,17 @@
 
     <!-- Include the OtpAuth component -->
     <OtpAuth :email="email" :isVisible="showOtpModal" @verified="handleVerification" />
-    <AppFooter />
   </div>
 </template>
 
 <script>
 import { mapActions } from 'vuex'; // Import Vuex actions
-import AppHeader from '../components/Header.vue';
-import AppFooter from '../components/Footer.vue';
 import OtpAuth from '../components/OtpAuth.vue';
 import { supabase } from '../supabase';
 
 export default {
   name: 'SignupView',
   components: {
-    AppHeader,
-    AppFooter,
     OtpAuth,
   },
   data() {

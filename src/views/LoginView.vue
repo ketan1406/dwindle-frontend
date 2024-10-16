@@ -1,6 +1,5 @@
 <template>
   <div>
-    <AppHeader />
     <section class="bg-white dark:bg-gray-900">
       <div class="container flex items-center justify-center min-h-screen px-6 mx-auto">
         <form @submit.prevent="handleLogin" class="w-full max-w-md">
@@ -114,18 +113,14 @@
         </form>
       </div>
     </section>
-    <AppFooter />
   </div>
 </template>
 
 <script>
 import { mapActions } from 'vuex';
-import AppHeader from '../components/Header.vue';
-import AppFooter from '../components/Footer.vue';
 
 export default {
   name: 'LoginView',
-  components: { AppHeader, AppFooter },
   data() {
     return {
       email: '',
