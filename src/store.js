@@ -4,14 +4,18 @@ import { supabase } from './supabase';
 const store = createStore({
   state: {
     user: null,
+    role: null,
   },
   mutations: {
     SET_USER(state, user) {
       state.user = user;
     },
+    SET_ROLE(state, role) {
+      state.role = role;
+    },
   },
   actions: {
-    async login({ commit }, { email, password }) {
+    async login({ commit, dispatch }, { email, password }) {
       try {
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
@@ -19,26 +23,27 @@ const store = createStore({
         });
         if (error) throw error;
         commit('SET_USER', data.user); // Commit user to Vuex state
+        await dispatch('fetchUserRole');
       } catch (error) {
         console.error('Login failed:', error.message);
         throw error; // Bubble up error for UI handling
       }
     },
-    async loginWithGoogle({ commit }) {
+    async loginWithGoogle() {
       try {
-        const { data, error } = await supabase.auth.signInWithOAuth({
+        const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
         });
         if (error) throw error;
-        commit('SET_USER', data.user);  // Commit the user to Vuex state
+        // commit('SET_USER', data.user);
       } catch (error) {
         console.error('Google login error:', error.message);
         throw error;  // Let the component handle the error
       }
     },
-    async signUp({ commit }, { email, password, username }) {
+    async signUp(_, { email, password, username }) {
       try {
-        const { data, error } = await supabase.auth.signUp(
+        const { error } = await supabase.auth.signUp(
           {
             email: email,
             password: password,
@@ -53,7 +58,7 @@ const store = createStore({
         if (error) throw error;
         
         // Commit the user data to the store (optional, if needed immediately)
-        commit('SET_USER', data.user);
+        // commit('SET_USER', data.user);
       } catch (error) {
         console.error('Sign-up error:', error.message);
         throw error;
@@ -63,15 +68,36 @@ const store = createStore({
       try {
         supabase.auth.signOut();
         commit('SET_USER', null); // Clear user state on logout
+        commit('SET_ROLE', null); // Clear role on logout
       } catch (error) {
         console.error('Logout failed:', error.message);
         throw error;
+      }
+    },
+    async fetchUserRole({ commit }) {
+      try {
+        const { data, error } = await supabase.rpc('get_user_role');
+        if (error) {
+          console.error('Error fetching user role:', error.message);
+          commit('SET_ROLE', null);
+          return;
+        }
+        console.log('Fetched user role data:', data); // Add this line
+
+        const roleName = data;
+        commit('SET_ROLE', roleName);
+      } catch (error) {
+        console.error('Unexpected error in fetchUserRole:', error.message);
+        commit('SET_ROLE', null);
       }
     },
   },
   getters: {
     isAuthenticated(state) {
       return !!state.user;
+    },
+    isAdmin(state) {
+      return state.role === 'Admin';
     },
   },
 });

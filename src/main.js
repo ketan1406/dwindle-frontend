@@ -4,8 +4,8 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
 import './assets/tailwind.css'; // Ensure Tailwind CSS is properly configured
-import  { supabase }  from './supabase'; // Import the Supabase client
-import  store  from './store'; // Import the reactive store
+import { supabase } from './supabase'; // Import the Supabase client
+import store from './store'; // Import the reactive store
 
 // Function to handle user profile creation or update
 const handleUserProfile = async (user) => {
@@ -43,14 +43,26 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     // Handle profile creation or update
     await handleUserProfile(user);
 
-    // Redirect to the dashboard
-    if (router.currentRoute.value.name !== 'UserDashboard') {
-      router.push('/dashboard');
+    // Fetch user role
+    await store.dispatch('fetchUserRole');
+
+    // Redirect based on role
+    if (store.getters.isAdmin) {
+      if (router.currentRoute.value.name !== 'AdminDashboard') {
+        router.push('/admin');
+      }
+    } else {
+      if (router.currentRoute.value.name !== 'UserDashboard') {
+        router.push('/dashboard');
+      }
     }
   }
 
   if (event === 'SIGNED_OUT') {
     console.log('SIGNED_OUT event detected. Redirecting to Home.');
+    // Clear user and role from store
+    store.commit('SET_USER', null);
+    store.commit('SET_ROLE', null);
     // Redirect to the home page upon sign-out
     router.push('/');
   }
@@ -64,6 +76,17 @@ app.use(store);
 
 // Use the router for navigation
 app.use(router);
+
+// Check if user is already logged in on app load
+(async () => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) {
+    store.commit('SET_USER', user);
+    await store.dispatch('fetchUserRole');
+  }
+})();
 
 // Mount the app to the DOM
 app.mount('#app');

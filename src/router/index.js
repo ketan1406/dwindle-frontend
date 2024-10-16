@@ -5,6 +5,7 @@ import HomeView from '../views/HomeView.vue';
 import LoginView from '../views/LoginView.vue';
 import SignupView from '../views/SignupView.vue';
 import UserDashboard from '../views/UserDashboard.vue';
+import AdminDashboard from '../views/AdminDashboard.vue';
 import store from '../store';
 // Import other views as needed
 
@@ -18,6 +19,12 @@ const routes = [
     component: UserDashboard,
     meta: { requiresAuth: true },
   },
+  {
+    path: '/admin',
+    name: 'AdminDashboard',
+    component: AdminDashboard,
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
 ];
 
 const router = createRouter({
@@ -26,11 +33,22 @@ const router = createRouter({
 });
 
 // Add navigation guard
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const isAuthenticated = store.getters.isAuthenticated;
   console.log(`Navigating to ${to.name}, Authenticated: ${isAuthenticated}`);
+
   if (to.matched.some((record) => record.meta.requiresAuth) && !isAuthenticated) {
     next({ name: 'Login' });
+  } else if (to.matched.some((record) => record.meta.requiresAdmin)) {
+    // Ensure role is loaded
+    if (store.state.role === null) {
+      await store.dispatch('fetchUserRole');
+    }
+    if (store.getters.isAdmin) {
+      next();
+    } else {
+      next({ name: 'UserDashboard' }); // Redirect non-admins to user dashboard
+    }
   } else if (['Login', 'Signup'].includes(to.name) && isAuthenticated) {
     next({ name: 'UserDashboard' });
   } else {
