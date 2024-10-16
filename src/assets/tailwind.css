@@ -3,3 +3,54 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Add custom component styles */
+@layer components {
+  /* Custom styles for the tabs */
+  .custom-tabs {
+    @apply border-b;
+    border-bottom-color: #445760;
+  }
+
+  /* Active Tab Styles */
+  .custom-active-tab {
+    background-color: #445760;
+    color: white;
+    border-color: #445760;
+    font-weight: bold;
+  }
+
+  /* Inactive Tab Styles */
+  .custom-tab {
+    color: #445760;
+    border-color: #445760;
+  }
+
+  /* Hover effect for inactive tabs */
+  .custom-tab:hover {
+    background-color: #E5E7EB; /* Tailwind's gray-200 */
+    font-weight: bold;
+  }
+
+  /* Adjust the border color of the content section */
+  .custom-tab-content {
+    border-color: #445760;
+  }
+
+  /* Optional: Remove default DaisyUI tab styles (if necessary) */
+  .tabs-lifted .tab-active:before {
+    background-color: transparent;
+  }
+
+  /* This applies to both the notification and avatar dropdowns */
+  .dropdown-content {
+    position: absolute; /* Make the dropdown absolutely positioned */
+    z-index: 9999;      /* Ensure it's on top of other elements */
+    top: 100%;          /* Position it below the button */
+    right: 0;            /* Adjust left or right positioning as necessary */
+    min-width: 6rem;   /* Optional: Ensures a minimum width for dropdown */
+    max-height: 10rem;  /* Optional: Add max height and enable scroll if content is too long */
+    overflow-y: auto;   /* Enable scroll if the content overflows */
+  }
+}
+
