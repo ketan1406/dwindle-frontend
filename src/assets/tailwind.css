@@ -24,6 +24,7 @@
   .custom-tab {
     color: #445760;
     border-color: #445760;
+    font-weight: bold;
   }
 
   /* Hover effect for inactive tabs */
