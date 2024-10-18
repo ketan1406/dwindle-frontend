@@ -84,6 +84,7 @@ export default {
       file: null,
       fileName: '',
       fileSelected: false,
+      currentUserId: null,
     };
   },
   methods: {
@@ -151,7 +152,7 @@ export default {
         author: this.authors,
         description: this.description,
         file_url: fileUrl,
-        added_by: this.userId, // You need to pass the user ID
+        added_by: this.currentUserId, // You need to pass the user ID
       };
 
       try {
