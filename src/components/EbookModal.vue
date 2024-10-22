@@ -74,6 +74,10 @@ export default {
       type: Object,
       default: null,
     },
+    userId: { // Define the userId prop
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
