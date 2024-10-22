@@ -209,6 +209,7 @@ export default {
   },
   async created() {
     await this.fetchEbooks();
+    this.setCurrentUserId();
   },
   methods: {
     async fetchEbooks() {
@@ -237,6 +238,9 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+    setCurrentUserId() {
+      this.currentUserId = this.$store.state.user ? this.$store.state.user.id : '';
     },
     prevPage() {
       if (this.currentPage > 1) {
@@ -331,6 +335,11 @@ export default {
         return text;
       }
       return text.substring(0, length) + '...';
+    },
+  },
+  watch: {
+    '$store.state.user'(newUser) {
+      this.currentUserId = newUser ? newUser.id : '';
     },
   },
 };
