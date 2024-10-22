@@ -6,6 +6,8 @@ import LoginView from '../views/LoginView.vue';
 import SignupView from '../views/SignupView.vue';
 import UserDashboard from '../views/UserDashboard.vue';
 import AdminDashboard from '../views/AdminDashboard.vue';
+import ContactView from '../views/Contact.vue';
+import NotFoundView from '@/views/NotFound.vue';
 import store from '../store';
 // Import other views as needed
 
@@ -25,6 +27,16 @@ const routes = [
     component: AdminDashboard,
     meta: { requiresAuth: true, requiresAdmin: true },
   },
+  {
+    path: '/contact',
+    name: 'Contact',
+    component: ContactView,
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: NotFoundView,
+  }
 ];
 
 const router = createRouter({
