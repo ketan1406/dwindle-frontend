@@ -88,7 +88,6 @@ export default {
       file: null,
       fileName: '',
       fileSelected: false,
-      currentUserId: null,
     };
   },
   methods: {
@@ -102,11 +101,10 @@ export default {
     removeAuthor(index) {
       this.authors.splice(index, 1);
     },
-    // Load existing ebook data when editing
     async loadEbookData() {
       if (this.isEditing && this.ebook) {
         this.title = this.ebook.title || '';
-        this.authors = [...this.ebook.author]; // Assuming 'author' is the array field
+        this.authors = [...this.ebook.authors]; // Ensure correct field name
         this.description = this.ebook.description || '';
       }
     },
@@ -124,9 +122,18 @@ export default {
       }
     },
     async saveEbook() {
+      console.log('Save Ebook button clicked');
+
       // Validate inputs...
       if (!this.title.trim()) {
+        console.log('Validation failed: Title is required.');
         alert('Title is required.');
+        return;
+      }
+
+      if (this.authors.length === 0) {
+        console.log('Validation failed: At least one author is required.');
+        alert('At least one author is required.');
         return;
       }
 
@@ -134,6 +141,7 @@ export default {
       let fileUrl = '';
       if (this.file) {
         const filePath = `ebooks/${this.file.name}`;
+        console.log('Uploading file to Supabase Storage:', filePath);
         const { error: fileError } = await supabase.storage
           .from('ebooks')
           .upload(filePath, this.file, {
@@ -147,20 +155,29 @@ export default {
         }
 
         // Get the public URL of the uploaded file
-        fileUrl = supabase.storage.from('ebooks').getPublicUrl(filePath).data.publicUrl;
+        const { data, error: urlError } = supabase.storage.from('ebooks').getPublicUrl(filePath);
+        if (urlError) {
+          console.error('Error getting public URL:', urlError.message);
+          alert('Error getting public URL of the uploaded file.');
+          return;
+        }
+        fileUrl = data.publicUrl;
+        console.log('File uploaded successfully. URL:', fileUrl);
       }
 
       // Prepare ebook data
       const ebookData = {
         title: this.title,
-        author: this.authors,
+        authors: this.authors, // Ensure 'authors' matches your Supabase schema
         description: this.description,
         file_url: fileUrl,
-        added_by: this.currentUserId, // You need to pass the user ID
+        added_by: this.userId, // Use the correctly passed user ID
       };
+      console.log('Prepared ebook data:', ebookData);
 
       try {
         if (this.isEditing && this.ebook) {
+          console.log('Updating existing ebook with ID:', this.ebook.id);
           // Update existing ebook
           const { error } = await supabase
             .from('ebooks')
@@ -173,6 +190,7 @@ export default {
             return;
           }
         } else {
+          console.log('Inserting new ebook');
           // Insert new ebook
           const { error } = await supabase
             .from('ebooks')
@@ -185,6 +203,7 @@ export default {
           }
         }
 
+        console.log('Ebook saved successfully.');
         // Emit the save event to refresh the ebooks list
         this.$emit('save');
       } catch (error) {

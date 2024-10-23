@@ -173,7 +173,7 @@
       </div>
     </div>
   </section>
-  <EbookModal v-if="showModal" :is-editing="isEditing" :ebook="selectedEbook" :user-id="currentUserId"
+  <EbookModal v-if="showModal" :is-editing="isEditing" :ebook="selectedEbook" :userId="currentUserId"
     @close="closeModal" @save="handleSaveEbook" />
 </template>
 
@@ -199,6 +199,8 @@ export default {
       selectedEbooks: [], // For storing selected ebook IDs
       showModal: false,
       isEditing: false,
+      selectedEbook: null,
+      
       currentUserId: '', // Add this to store current user ID
     };
   },
