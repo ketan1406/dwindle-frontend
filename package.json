@@ -11,6 +11,7 @@
     "@supabase/supabase-js": "^2.45.4",
     "core-js": "^3.8.3",
     "daisyui": "^4.12.13",
+    "jwt-decode": "^4.0.0",
     "vue": "^3.2.13",
     "vue-router": "^4.4.5",
     "vue3-toastify": "^0.2.3",
