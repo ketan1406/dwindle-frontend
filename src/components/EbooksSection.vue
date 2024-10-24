@@ -225,6 +225,9 @@ export default {
           .select('*', { count: 'exact' })
           .order('title', { ascending: this.sortOrder === 'asc' })
           .range(from, to);
+          
+        this.ebooks = data;
+        console.log('Fetched ebooks:', this.ebooks);
 
         if (error) throw error;
 

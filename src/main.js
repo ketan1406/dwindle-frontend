@@ -7,6 +7,9 @@ import './assets/tailwind.css'; // Ensure Tailwind CSS is properly configured
 import { supabase } from './supabase'; // Import the Supabase client
 import store from './store'; // Import the reactive store
 
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
+
 // Function to handle user profile creation or update
 const handleUserProfile = async (user) => {
   try {
@@ -38,6 +41,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
 
   if (event === 'SIGNED_IN' && session?.user) {
     const user = session.user;
+
     console.log(`SIGNED_IN event detected for user: ${user.email}`);
 
     // Handle profile creation or update
@@ -70,6 +74,13 @@ supabase.auth.onAuthStateChange(async (event, session) => {
 
 // Initialize the Vue application
 const app = createApp(App);
+
+// Use vue-toastify
+app.use(toast, {
+  position: 'top-right',
+  timeout: 5000,
+  // Add any other global options if needed
+});
 
 // Make the reactive store available throughout the app
 app.use(store);

@@ -46,9 +46,13 @@
           </h2>
         </label>
       </div>
+      <!-- Progress Bar -->
+      <div v-if="isUploading" class="my-4 flex justify-center">
+        <progress class="progress progress-accent w-56"></progress>
+      </div>
       <!-- Actions -->
       <div class="modal-action">
-        <button @click="saveEbook" class="btn btn-primary">
+        <button @click="saveEbook" :disabled="isUploading" class="btn btn-primary">
           Save Changes
         </button>
         <button @click="$emit('close')" class="btn">
@@ -62,6 +66,7 @@
 <script>
 // Import Supabase client
 import { supabase } from '../supabase';
+import { toast } from 'vue3-toastify';
 
 export default {
   name: 'EbookModal',
@@ -88,6 +93,7 @@ export default {
       file: null,
       fileName: '',
       fileSelected: false,
+      isUploading: false,
     };
   },
   methods: {
@@ -106,6 +112,7 @@ export default {
         this.title = this.ebook.title || '';
         this.authors = [...this.ebook.authors]; // Ensure correct field name
         this.description = this.ebook.description || '';
+        this.file_url = this.ebook.file_url || '';
       }
     },
     async handleFileUpload(event) {
@@ -115,7 +122,7 @@ export default {
         this.fileName = file.name;
         this.fileSelected = true;
       } else {
-        alert('Please select a PDF file.');
+        toast.error('Please select a PDF file.');
         this.file = null;
         this.fileName = '';
         this.fileSelected = false;
@@ -127,20 +134,25 @@ export default {
       // Validate inputs...
       if (!this.title.trim()) {
         console.log('Validation failed: Title is required.');
-        alert('Title is required.');
+        toast.error('Title is required.');
         return;
       }
 
       if (this.authors.length === 0) {
         console.log('Validation failed: At least one author is required.');
-        alert('At least one author is required.');
+        toast.error('At least one author is required.');
         return;
       }
 
       // Upload the PDF file to Supabase Storage
       let fileUrl = '';
       if (this.file) {
-        const filePath = `ebooks/${this.file.name}`;
+      //   const originalFileName = this.file.name;
+      //   const sanitizedFileName = originalFileName
+      //     .replace(/\s+/g, '_') // Replace spaces with underscores
+      //     .replace(/[^\w\-\.]/g, ''); // Remove all non-word characters except dash and dot
+        const filePath = `${this.file.name}`;
+        this.isUploading = true;
         console.log('Uploading file to Supabase Storage:', filePath);
         const { error: fileError } = await supabase.storage
           .from('ebooks')
@@ -150,7 +162,8 @@ export default {
 
         if (fileError) {
           console.error('Error uploading file:', fileError.message);
-          alert('Error uploading file: ' + fileError.message);
+          toast.error('Error uploading file: ' + fileError.message);
+          this.isUploading = false;
           return;
         }
 
@@ -158,11 +171,14 @@ export default {
         const { data, error: urlError } = supabase.storage.from('ebooks').getPublicUrl(filePath);
         if (urlError) {
           console.error('Error getting public URL:', urlError.message);
-          alert('Error getting public URL of the uploaded file.');
+          toast.error('Error getting public URL of the uploaded file.');
+          this.isUploading = false; // Hide the progress bar
           return;
         }
         fileUrl = data.publicUrl;
+        toast.success('File uploaded successfully.');
         console.log('File uploaded successfully. URL:', fileUrl);
+        this.isUploading = false;
       }
 
       // Prepare ebook data
@@ -170,7 +186,7 @@ export default {
         title: this.title,
         authors: this.authors, // Ensure 'authors' matches your Supabase schema
         description: this.description,
-        file_url: fileUrl,
+        file_url: fileUrl || this.ebook?.file_url || '',
         added_by: this.userId, // Use the correctly passed user ID
       };
       console.log('Prepared ebook data:', ebookData);
@@ -186,7 +202,7 @@ export default {
 
           if (error) {
             console.error('Error updating ebook:', error.message);
-            alert('Error updating ebook: ' + error.message);
+            toast.error('Error updating ebook: ' + error.message);
             return;
           }
         } else {
@@ -198,17 +214,18 @@ export default {
 
           if (error) {
             console.error('Error inserting ebook:', error.message);
-            alert('Error inserting ebook: ' + error.message);
+            toast.error('Error inserting ebook: ' + error.message);
             return;
           }
         }
 
         console.log('Ebook saved successfully.');
+        toast.success('Ebook saved successfully.');
         // Emit the save event to refresh the ebooks list
         this.$emit('save');
       } catch (error) {
         console.error('Error saving ebook:', error.message);
-        alert('Error saving ebook: ' + error.message);
+        toast.error('Error saving ebook: ' + error.message);
       }
     },
   },
