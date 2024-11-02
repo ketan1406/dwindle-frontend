@@ -81,12 +81,12 @@
 
 <script>
 import { supabase } from '../supabase';
-import { VueDraggableNext } from 'vuedraggable';
+import draggable from 'vuedraggable';
 
 export default {
   name: 'CatalogueModal',
   components: {
-    draggable: VueDraggableNext,
+    draggable,
   },
   props: {
     catalogue: {
