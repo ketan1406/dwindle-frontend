@@ -1,16 +1,26 @@
 <!-- src/views/UserDashboard.vue -->
 
 <template>
-    <div class="container mx-auto py-20">
-      <h2 class="text-3xl font-bold text-center mb-8">Welcome to Your Dashboard</h2>
-      <p class="text-center text-lg">This is where you can manage your account and access exclusive features.</p>
-    </div>
+  <div class="container mx-auto py-10">
+    <!-- Ebooks Section -->
+    <UserEbooksSection />
+
+    <!-- Catalogues Section -->
+    <UserCataloguesSection />
+  </div>
 </template>
 
+
 <script>
+import UserEbooksSection from '../components/UserEbooksSection.vue';
+import UserCataloguesSection from '../components/UserCataloguesSection.vue';
 
 export default {
   name: 'UserDashboard',
+  components: {
+    UserEbooksSection,
+    UserCataloguesSection,
+  },
 };
 </script>
 
