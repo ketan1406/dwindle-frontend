@@ -172,6 +172,7 @@ export default {
         this.loadingEbooks = true;
         this.error = false;
         this.errorMessage = '';
+        this.catalogueEbooks = [];
 
         // Step 1: Fetch ebook_ids associated with the selected catalogue
         const { data: ebookSections, error: esError } = await supabase
@@ -221,6 +222,9 @@ export default {
       this.showModal = false;
       this.selectedCatalogue = null;
       this.catalogueEbooks = [];
+      this.loadingEbooks = false;
+      this.error = false;
+      this.errorMessage = '';
     },
     viewEbook(ebookId) {
       this.selectedEbookId = ebookId;
