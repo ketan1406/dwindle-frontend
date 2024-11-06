@@ -27,7 +27,7 @@
           v-if="pdfUrl"
           :src="pdfUrl"
           width="100%"
-          height="700px"
+          height="600px"
           style="border: none;"
         ></iframe>
       </div>
